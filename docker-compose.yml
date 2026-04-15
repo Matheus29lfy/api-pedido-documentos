@@ -1,5 +1,7 @@
 version: '3.8'
-
+networks:
+  med-network:
+    driver: bridge
 services:
   app:
     build: .
@@ -10,7 +12,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
+    networks:
+        - med-network
   db:
     image: postgres:15-alpine
     environment:
@@ -24,3 +27,5 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - med-network
