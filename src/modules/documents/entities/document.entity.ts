@@ -1,9 +1,9 @@
-import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('documents')
 @Index(['CodigoDocumento', 'CodigoPedido'], { unique: true }) // Regra de duplicidade [cite: 71, 74]
 export class Document {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   id: number; // ID autoincremento ou gerado
 
   @Column()
