@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Document } from './entities/document.entity';
@@ -9,6 +9,7 @@ export class DocumentsService {
   constructor(
     @InjectRepository(Document)
     private readonly documentRepository: Repository<Document>,
+    @Inject(forwardRef(() => OrdersService)) // Use o forwardRef aqui
     private readonly ordersService: OrdersService,
   ) {}
 
