@@ -7,7 +7,7 @@ export class DocumentsController {
 
   @Post()
   create(@Body() docDto: any) {
-    return this.documentsService.create(docDto);
+    return this.documentsService.createDocument(docDto);
   }
 
   @Get(':codigoPedido')

@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
@@ -18,65 +18,65 @@ export class OrdersService {
     private readonly examsService: ExamsService,
   ) {}
 
-async createOrUpdate(orderDto: any): Promise<Order> {
-  // 1. Busca inicial
+async createOrUpdate(orderDto: any) {
   const existingOrder = await this.orderRepository.findOne({
     where: { CodigoPedido: orderDto.CodigoPedido },
     relations: ['Exames'],
   });
 
-  let order: Order;
-
   if (existingOrder) {
-    order = existingOrder;
-    
-    // Inicializa o array se estiver nulo
-    if (!order.Exames) order.Exames = [];
-
-    // Filtra exames que já não existam no pedido
+    // Regra 1: Adicionar exames somente se ainda não existirem
     const newExams = orderDto.Exames.filter(
-      (dtoExam: any) => !order.Exames.some(
-        (dbExam) => dbExam.CodigoltemPedido === dtoExam.CodigoltemPedido
-      )
+      (dto) => !existingOrder.Exames.some(db => db.CodigoltemPedido === dto.CodigoltemPedido)
     );
 
-    if (newExams.length > 0) {
-      const examsToSave = newExams.map((e: any) => 
-        this.examRepository.create({ ...e, order })
-      );
-      order.Exames.push(...examsToSave);
+    if (newExams.length === 0) {
+      return { data: existingOrder, isNew: false, changed: false };
     }
-  } else {
-      // Forçamos o retorno a ser tratado como um objeto único (Order)
-      order = this.orderRepository.create({
-        ...orderDto,
-        integrado: false,
-      } as Order);
-    // Garante que a lista de exames vinda do DTO seja convertida em entidades
-    if (orderDto.Exames) {
-        order.Exames = orderDto.Exames.map((e: any) => this.examRepository.create({ ...e }));
-    }
+
+    const examsToSave = newExams.map(e => this.examRepository.create({ ...e, order: existingOrder }));
+    existingOrder.Exames.push(...examsToSave);
+    
+    // Regra 2: Re-verificar integração ao adicionar novos exames
+    // existingOrder.integrado = await this.checkIntegration(orderDto.Exames);
+    
+    const saved = await this.orderRepository.save(existingOrder);
+    return { data: saved, isNew: false, changed: true };
   }
 
-  // 3. Regra de Negócio: Integração
-  if (order.Exames && order.Exames.length > 0) {
-    for (const exam of order.Exames) {
-      const existsInSystem = await this.examsService.findByAccession(exam.AccessionNumber);
-      if (existsInSystem) {
-        order.integrado = true;
-        break;
-      }
-    }
-  }
+  // Novo Pedido
+  const order = this.orderRepository.create({ ...orderDto, integrado: false } as Order);
+  order.Exames = orderDto.Exames.map(e => this.examRepository.create({ ...e, order }));
+  
+  // Regra 2: Verificar se já existe exame com o AccessionNumber
+  // order.integrado = await this.checkIntegration(orderDto.Exames);
 
-  // 4. Retorno com Cast Explícito para evitar erro TS2322 (Array vs Object)
-  const savedOrder = await this.orderRepository.save(order);
-  return savedOrder as Order;
+  const saved = await this.orderRepository.save(order);
+  return { data: saved, isNew: true, changed: true };
 }
+
+// private async checkIntegration(exames: any[]): Promise<boolean> {
+//   const accessions = exames.map(e => e.AccessionNumber);
+//   // Aqui você busca na sua tabela de 'chegada_exames' ou 'eventos_exames'
+//   const count = await this.examsService.exists(accessions);
+//   return count > 0;
+// }
   async findOne(codigoPedido: number): Promise<Order | null> {
-    return await this.orderRepository.findOne({ 
-      where: { CodigoPedido: codigoPedido },
-      relations: ['Exames'] 
+    const order = await this.orderRepository.findOne({ 
+    where: { CodigoPedido: codigoPedido },
+    relations: ['Exames'] 
+  });
+
+  if (!order) {
+    // Lança o erro 404 automaticamente
+    throw new NotFoundException(`Pedido com Código ${codigoPedido} não encontrado.`);
+  }
+
+  return order;
+}
+  async findAll(): Promise<Order[]> { // Altere de Order | null para Order[]
+    return await this.orderRepository.find({
+      relations: ['Exames'] // Adicione isso para ver os exames na lista
     });
   }
 
@@ -87,4 +87,8 @@ async createOrUpdate(orderDto: any): Promise<Order> {
       .where('exam.AccessionNumber = :accessionNumber', { accessionNumber })
       .getOne();
   }
+
+  async updateIntegrationStatus(codigoPedido: number, status: boolean) {
+  await this.orderRepository.update({ CodigoPedido: codigoPedido }, { integrado: status });
+}
 }

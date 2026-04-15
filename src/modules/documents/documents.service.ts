@@ -13,32 +13,28 @@ export class DocumentsService {
     private readonly ordersService: OrdersService,
   ) {}
 
-  async create(docDto: any) {
-    // Regra: Não permitir duplicado (CodigoDocumento + CodigoPedido) 
-    const duplicate = await this.documentRepository.findOne({
-      where: {
-        CodigoDocumento: docDto.CodigoDocumento,
-        CodigoPedido: docDto.CodigoPedido,
-      },
-    });
-
-    if (duplicate) {
-      // Resultado esperado: retorno de erro de duplicidade [cite: 104]
-      throw new ConflictException('Documento já cadastrado para este pedido.');
+async createDocument(docDto: any) {
+  // Regra 3: Validação de duplicidade (CodigoDocumento + CodigoPedido)
+  const existingDoc = await this.documentRepository.findOne({
+    where: { 
+      CodigoDocumento: docDto.CodigoDocumento, 
+      CodigoPedido: docDto.CodigoPedido 
     }
+  });
 
-    const order = await this.ordersService.findOne(docDto.CodigoPedido);
-    
-    // Se o pedido relacionado já estiver integrado, o documento deve ser marcado como integrado: true [cite: 75, 76]
-    const isIntegrated = order ? order.integrado : false;
-
-    const newDoc = this.documentRepository.create({
-      ...docDto,
-      integrado: isIntegrated,
-    });
-
-    return await this.documentRepository.save(newDoc);
+  if (existingDoc) {
+    throw new ConflictException('Documento duplicado para este pedido.'); // Retorna 409
   }
+
+  const order = await this.ordersService.findOne(docDto.CodigoPedido);
+
+  const document = this.documentRepository.create({
+    ...docDto,
+    integrado: order?.integrado || false // Regra 3: Se já integrado, marca o doc como integrado
+  });
+
+  return await this.documentRepository.save(document);
+}
 
   async findPendingByOrder(codigoPedido: number) {
     // Busca documentos salvos, mas ainda não vinculados ao exame [cite: 98]
@@ -57,4 +53,12 @@ export class DocumentsService {
       { integrado: true }
     );
   }
+
+  async linkPendingDocuments(codigoPedido: number) {
+  // Regra 4: Documentos pendentes passam a ser integrados: true
+  await this.documentRepository.update(
+    { CodigoPedido: codigoPedido, integrado: false },
+    { integrado: true }
+  );
+}
 }

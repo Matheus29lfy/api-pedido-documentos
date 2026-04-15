@@ -15,4 +15,9 @@ export class OrdersController {
   findOne(@Param('codigoPedido', ParseIntPipe) codigoPedido: number) {
     return this.ordersService.findOne(codigoPedido);
   }
+
+  @Get()
+  async findAll() {
+    return this.ordersService.findAll(); // Crie esse método no service se precisar
+  }
 }
