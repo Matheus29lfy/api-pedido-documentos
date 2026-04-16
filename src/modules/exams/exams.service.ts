@@ -3,7 +3,7 @@ import { OrdersService } from '../orders/orders.service';
 import { DocumentsService } from '../documents/documents.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamArrival } from './entities/exam-arrival.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class ExamsService {
@@ -62,4 +62,12 @@ export class ExamsService {
     });
     return count > 0;
   }
+
+  async existsMany(accessions: string[]): Promise<boolean> {
+  const count = await this.arrivalRepository.count({
+    where: { AccessionNumber: In(accessions) }
+  });
+  console.log(`Verificando existência de accessions: ${accessions.join(', ')}. Encontrados: ${count}`);
+  return count > 0;
+}
 }
