@@ -14,4 +14,9 @@ export class DocumentsController {
   findByOrder(@Param('codigoPedido', ParseIntPipe) codigoPedido: number) {
     return this.documentsService.findPendingByOrder(codigoPedido);
   }
+   
+  @Get()
+  async findAll() {
+    return this.documentsService.findAll(); // Crie esse método no service se precisar
+  }
 }

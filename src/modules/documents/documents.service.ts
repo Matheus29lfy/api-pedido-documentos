@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, ConflictException, forwardRef, Inject, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Document } from './entities/document.entity';
@@ -38,13 +38,24 @@ async createDocument(docDto: any) {
 
   async findPendingByOrder(codigoPedido: number) {
     // Busca documentos salvos, mas ainda não vinculados ao exame [cite: 98]
-    return await this.documentRepository.find({
+     const document = await this.documentRepository.find({
       where: {
         CodigoPedido: codigoPedido,
         integrado: false,
       },
     });
+
+   if (document.length === 0) {
+      // Lança o erro 404 automaticamente
+      throw new NotFoundException(`Documento com Código ${codigoPedido} não encontrado.`);
+    }
+    return document;
   }
+
+    async findAll(): Promise<Document[]> { // Altere de Order | null para Order[]
+      return await this.documentRepository.find({
+      });
+    }
 
   async markAsIntegrated(codigoPedido: number) {
     // Regra: Documento é vinculado quando o exame referente ao pedido chega [cite: 100]
