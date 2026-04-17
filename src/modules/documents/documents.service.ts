@@ -53,8 +53,15 @@ async createDocument(docDto: any) {
   }
 
     async findAll(): Promise<Document[]> { // Altere de Order | null para Order[]
-      return await this.documentRepository.find({
+          const documents = await this.documentRepository.find({
       });
+
+      if (documents.length === 0) {
+            // Lança o erro 404 automaticamente
+            throw new NotFoundException(`Não há documentos cadastrados.`);
+          }
+
+      return documents;
     }
 
   async markAsIntegrated(codigoPedido: number) {

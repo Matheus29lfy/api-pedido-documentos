@@ -104,9 +104,13 @@ export class OrdersService {
   return order;
 }
   async findAll(): Promise<Order[]> { // Altere de Order | null para Order[]
-    return await this.orderRepository.find({
+     const orders = await this.orderRepository.find({
       relations: ['Exames'] // Adicione isso para ver os exames na lista
     });
+    if (orders.length === 0) {
+      throw new NotFoundException(`Não há pedidos cadastrados.`);
+    }
+    return orders
   }
 
   // Método auxiliar necessário para a integração quando o exame chega primeiro
