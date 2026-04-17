@@ -28,21 +28,12 @@ export class OrdersService {
         (dto) => !existingOrder.Exames.some(db => db.CodigoltemPedido === dto.CodigoltemPedido)
       );
 
-      // Se não há exames novos, retornamos uma mensagem clara
-      // if (newExams.length === 0) {
-      //   return { 
-      //     message: "Pedido já existe e não há novos exames para adicionar.",
-      //     changed: false 
-      //   };
-      // }
-
       const examsToSave = newExams.map(e => this.examRepository.create({ ...e, order: existingOrder }));
       existingOrder.Exames.push(...examsToSave);
       
       // Regra 2: Verifica se algum dos exames (novos ou antigos) já chegou ao sistema
       existingOrder.integrado = await this.checkIntegration(orderDto.Exames);
-    //         console.log('Criando pedido com exames:', existingOrder);
-    // return
+
       const saved = await this.orderRepository.save(existingOrder);
       return { 
         message: "Exames adicionados com sucesso ao pedido existente.",
@@ -57,8 +48,7 @@ export class OrdersService {
     
     // Regra 2: Verifica integração na criação
     order.integrado = await this.checkIntegration(orderDto.Exames);
-    //   console.log('Criando pedido com exames:', order);
-    // return
+
     const saved = await this.orderRepository.save(order);
     return { 
       message: "Pedido criado com sucesso.",
@@ -84,12 +74,9 @@ export class OrdersService {
 
   private async checkIntegration(exames: any[]): Promise<boolean> {
     const accessions = exames.map(e => e.AccessionNumber);
-    // console.log('Verificando integração para accessions:', accessions);
-    // IMPORTANTE: Aqui chamamos o service de exames para ver se esses accessions já "chegaram"
     return await this.examsService.existsMany(accessions);
   }
 
-  // ... outros métodos (findOne, findAll, etc)
   async findOne(codigoPedido: number): Promise<Order | null> {
     const order = await this.orderRepository.findOne({ 
     where: { CodigoPedido: codigoPedido },
