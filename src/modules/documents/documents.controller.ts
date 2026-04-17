@@ -1,12 +1,13 @@
 import { Controller, Post, Get, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
+import { CreateDocumentDto } from './dto/create-document.dto';
 
 @Controller('documentos')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post()
-  create(@Body() docDto: any) {
+  create(@Body() docDto: CreateDocumentDto) {
     return this.documentsService.createDocument(docDto);
   }
 
