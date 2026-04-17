@@ -3,6 +3,7 @@ import { OrdersService } from '../orders/orders.service';
 import { DocumentsService } from '../documents/documents.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamArrival } from './entities/exam-arrival.entity';
+import { Exam } from './entities/exam.entity';
 import { In, Repository } from 'typeorm';
 
 @Injectable()
@@ -10,8 +11,8 @@ export class ExamsService {
   private exams = [];
 
   constructor(
-    @InjectRepository(ExamArrival)
-    private readonly arrivalRepository: Repository<ExamArrival>,
+    @InjectRepository(Exam)
+    private readonly arrivalRepository: Repository<Exam>,
     @Inject(forwardRef(() => OrdersService)) private ordersService: any,
     @Inject(forwardRef(() => DocumentsService)) private docsService: any,
   ) {}
