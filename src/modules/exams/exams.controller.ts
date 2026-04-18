@@ -11,8 +11,12 @@ export class ExamsController {
   }
 
   @Get(':accessionNumber')
-  async checkStatus(@Param('accessionNumber') accessionNumber: string) {
-    const arrived = await this.examsService.exists(accessionNumber);
-    return { AccessionNumber: accessionNumber, arrived };
+  async findOne(@Param('accessionNumber') accessionNumber: string) {
+    return  await this.examsService.findOne(accessionNumber);
+  }
+
+  @Get('')
+  async findAll()  {
+    return await this.examsService.findAll();
   }
 }
