@@ -51,7 +51,7 @@ export class DocumentsService {
       const documents = await this.documentRepository.find();
       
     if (documents.length === 0) {
-      throw new NotFoundException(`Nenhum documento pendente encontrado para o pedido ${codigoPedido}.`);
+      throw new NotFoundException(`Nenhum documento pendente encontrado para o pedido`);
     }
     return documents;
   }
