@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 
 class ExamItemDto {
   @IsNumber()
-  CodigoltemPedido: number;
+  CodigoItemPedido: number;
 
   @IsString()
   AccessionNumber: string;
