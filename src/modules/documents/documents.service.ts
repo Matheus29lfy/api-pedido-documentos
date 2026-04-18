@@ -48,12 +48,17 @@ export class DocumentsService {
 
   // Ajuste: Retorna array vazio se não houver documentos (Padrão REST)
   async findAll(): Promise<Document[]> {
-    return await this.documentRepository.find();
+      const documents = await this.documentRepository.find();
+      
+    if (documents.length === 0) {
+      throw new NotFoundException(`Nenhum documento pendente encontrado para o pedido ${codigoPedido}.`);
+    }
+    return documents;
   }
 
   async findPendingByOrder(codigoPedido: number) {
     const documents = await this.documentRepository.find({
-      where: { CodigoPedido: codigoPedido, integrado: false },
+      where: { CodigoPedido: codigoPedido},
     });
 
     // Aqui o 404 faz sentido pois é uma busca específica por pedido
@@ -67,7 +72,7 @@ export class DocumentsService {
   async linkPendingDocuments(codigoPedido: number) {
     // Regra 4: Documentos pendentes passam a ser integrados: true
     return await this.documentRepository.update(
-      { CodigoPedido: codigoPedido, integrado: false },
+      { CodigoPedido: codigoPedido},
       { integrado: true }
     );
   }
