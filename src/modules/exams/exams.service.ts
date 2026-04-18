@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service';
 import { DocumentsService } from '../documents/documents.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -36,6 +36,29 @@ export class ExamsService {
   async findByAccession(accessionNumber: string) {
     return this.exams.find(e => e.AccessionNumber === accessionNumber);
   }
+
+
+    async findOne(accessionNumber: string): Promise<Exam | null> {
+      const exam = await this.examsRepository.findOne({ 
+      where: { AccessionNumber: accessionNumber },
+    });
+
+     if (!exam) {
+      // Lança o erro 404 automaticamente
+      throw new NotFoundException(`Exame com Número de Acesso ${accessionNumber} não encontrado.`);
+    }
+  
+    return exam;
+  }
+
+    async findAll(): Promise<Exam[]> { // Altere de Order | null para Order[]
+       const exams = await this.examsRepository.find();
+      if (exams.length === 0) {
+        throw new NotFoundException(`Não há exames cadastrados.`);
+      }
+      return exams
+    }
+  
 
   async handleArrival(order: any) {
     // 1. Registrar a chegada
