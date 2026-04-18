@@ -5,10 +5,11 @@ import { Exam } from './entities/exam.entity';
 import { OrdersModule } from '../orders/orders.module';
 import { DocumentsModule } from '../documents/documents.module';
 import { ExamsController } from './exams.controller';
+import { Order } from '../orders/entities/order.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Exam]),
+    TypeOrmModule.forFeature([Exam, Order]),
     forwardRef(() => OrdersModule),
     forwardRef(() => DocumentsModule),
   ],
