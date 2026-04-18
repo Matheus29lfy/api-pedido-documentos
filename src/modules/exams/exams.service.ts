@@ -12,7 +12,7 @@ export class ExamsService {
 
   constructor(
     @InjectRepository(Exam)
-    private readonly arrivalRepository: Repository<Exam>,
+    private readonly examsRepository: Repository<Exam>,
     @Inject(forwardRef(() => OrdersService)) private ordersService: any,
     @Inject(forwardRef(() => DocumentsService)) private docsService: any,
   ) {}
@@ -37,35 +37,35 @@ export class ExamsService {
     return this.exams.find(e => e.AccessionNumber === accessionNumber);
   }
 
-  async handleArrival(arrivalDto: { AccessionNumber: string }) {
+  async handleArrival(order: any) {
     // 1. Registrar a chegada
-    const arrival = this.arrivalRepository.create(arrivalDto);
-    await this.arrivalRepository.save(arrival);
+    // const arrival = this.arrivalRepository.create(arrivalDto);
+    // await this.arrivalRepository.save(arrival);
 
-    // 2. Buscar pedidos que possuem este AccessionNumber
-    const order = await this.ordersService.findByAccession(arrivalDto.AccessionNumber);
+    // // 2. Buscar pedidos que possuem este AccessionNumber
+    // const order = await this.ordersService.findByAccession(arrivalDto.AccessionNumber);
 
-    if (order) {
+    // if (order) {
       // Regra 4: Marcar pedido como integrado
-      await this.ordersService.updateIntegrationStatus(order.CodigoPedido, true);
+      // await this.ordersService.updateIntegrationStatus(order.CodigoPedido, true);
 
       // Regra 4: Vincular documentos pendentes para este pedido
       await this.docsService.linkPendingDocuments(order.CodigoPedido);
-    }
+    // }
 
     return { message: 'Chegada processada com sucesso', integrated: !!order };
   }
 
   // Método auxiliar para os outros services consultarem se um accession já chegou
   async exists(accessionNumber: string): Promise<boolean> {
-    const count = await this.arrivalRepository.count({
+    const count = await this.examsRepository.count({
       where: { AccessionNumber: accessionNumber },
     });
     return count > 0;
   }
 
   async existsMany(accessions: string[]): Promise<boolean> {
-  const count = await this.arrivalRepository.count({
+  const count = await this.examsRepository.count({
     where: { AccessionNumber: In(accessions) }
   });
   console.log(`Verificando existência de accessions: ${accessions.join(', ')}. Encontrados: ${count}`);
