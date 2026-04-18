@@ -141,14 +141,6 @@ export class OrdersService {
     return orders
   }
 
-  // Método auxiliar necessário para a integração quando o exame chega primeiro
-  async findByAccession(accessionNumber: string): Promise<Order | null> {
-    return await this.orderRepository.createQueryBuilder('order')
-      .leftJoinAndSelect('order.Exames', 'exam')
-      .where('exam.AccessionNumber = :accessionNumber', { accessionNumber })
-      .getOne();
-  }
-
   async updateIntegrationStatus(codigoPedido: number, status: boolean) {
   await this.orderRepository.update({ CodigoPedido: codigoPedido }, { integrado: status });
 }
