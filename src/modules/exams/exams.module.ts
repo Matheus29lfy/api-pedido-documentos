@@ -5,6 +5,7 @@ import { Exam } from './entities/exam.entity';
 import { ExamArrival } from './entities/exam-arrival.entity';
 import { OrdersModule } from '../orders/orders.module';
 import { DocumentsModule } from '../documents/documents.module';
+import { ExamsController } from './exams.controller';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { DocumentsModule } from '../documents/documents.module';
     forwardRef(() => OrdersModule),
     forwardRef(() => DocumentsModule),
   ],
+  controllers: [ExamsController],
   providers: [ExamsService],
   exports: [ExamsService],
 })
