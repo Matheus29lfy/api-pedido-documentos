@@ -1,12 +1,19 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, Index, Unique, PrimaryGeneratedColumn } from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
 
 @Entity('exams')
 export class Exam {
-  @PrimaryColumn()
-  CodigoltemPedido: number;
+  // 1. ADICIONE UMA CHAVE PRIMÁRIA REAL
+  @PrimaryGeneratedColumn()
+  id: number; 
 
-  @Index() // Indexado para otimizar a busca por AccessionNumber [cite: 63, 89]
+  // 2. MUDE PARA COLUMN (Deixa de ser a identidade do registro)
+  @Unique(['CodigoItemPedido', 'CodigoPedido'])
+  @PrimaryColumn()
+  CodigoItemPedido: number;
+
+  @Index()
+  @Unique(['AccessionNumber'])
   @Column()
   AccessionNumber: string;
 
